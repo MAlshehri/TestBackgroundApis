@@ -18,16 +18,20 @@ namespace TestBackgroundApis
 
         public async Task UpdateRecords(int index = 0)
         {
-            var context = _httpClientFactory.CreateClient();
-            var result = await context.GetAsync($"{url}/{index}");
-            if (result.IsSuccessStatusCode)
+            var startIndex = index - 99;
+            for (; startIndex <= index; startIndex++)
             {
-                var json = await result.Content.ReadAsStringAsync();
-                var fakeObj = JsonConvert.DeserializeObject<Fake>(json);
-                if (fakeObj != null)
+                var context = _httpClientFactory.CreateClient();
+                var result = await context.GetAsync($"{url}/{startIndex}", new CancellationToken()).ConfigureAwait(false);
+                if (result.IsSuccessStatusCode)
                 {
-                    _dbContext.Fakes.Update(fakeObj);
-                    await _dbContext.SaveChangesAsync();
+                    var json = await result.Content.ReadAsStringAsync();
+                    var fakeObj = JsonConvert.DeserializeObject<Fake>(json);
+                    if (fakeObj != null)
+                    {
+                        _dbContext.Fakes.Update(fakeObj);
+                        await _dbContext.SaveChangesAsync();
+                    }
                 }
             }
         }

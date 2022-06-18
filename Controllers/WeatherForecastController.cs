@@ -14,6 +14,7 @@ namespace TestBackgroundApis.Controllers
 
         
         private readonly ILogger<WeatherForecastController> _logger;
+        private static int total = 100000;
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
@@ -22,9 +23,11 @@ namespace TestBackgroundApis.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IActionResult Get()
         {
-            for (int i = 1; i <= 1000; i++)
+            var batchSize = 100;
+            int numberOfBatches = (int)Math.Ceiling((double)total / batchSize);
+            for (int i = 1; i <= numberOfBatches; i++)
             {
-                BackgroundJob.Enqueue<ContractUpdateWorker>(x => x.UpdateRecords(i));
+                BackgroundJob.Enqueue<ContractUpdateWorker>(x => x.UpdateRecords(i * batchSize));
             }
             return Ok();
         }
